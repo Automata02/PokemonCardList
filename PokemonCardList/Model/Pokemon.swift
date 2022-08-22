@@ -27,7 +27,7 @@ struct Datum: Codable {
     let weaknesses: [Resistance]?
     let retreatCost: [RetreatCost]?
     let convertedRetreatCost: Int?
-    let datumSet: Set
+    let datumSet: mySet
     let number, artist: String
     let rarity: Rarity
     let flavorText: String?
@@ -74,7 +74,7 @@ enum RetreatCost: String, Codable {
 }
 
 // MARK: - Set
-struct Set: Codable {
+struct mySet: Codable {
     let id: ID
     let name, series: Name
     let printedTotal, total: Int

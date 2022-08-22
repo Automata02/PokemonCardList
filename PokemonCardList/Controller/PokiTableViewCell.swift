@@ -25,7 +25,7 @@ class PokiTableViewCell: UITableViewCell {
     @IBAction func favTapped(_ sender: Any) {
         PokemonViewController.pokiIDs.append(ID)
         print("tap tap")
-        nameLabel.text = "pocket monster"
+        nameLabel.text = "👁👄👁"
         print(PokemonViewController.pokiIDs)
 
     }

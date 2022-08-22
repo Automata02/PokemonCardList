@@ -13,9 +13,11 @@ class PokemonViewController: UIViewController {
     @IBOutlet weak var favoriteOutlet: UIBarButtonItem!
     
     let defaults = UserDefaults.standard
-    static var poki: [Datum] = []
+    var poki: [Datum] = []
+    var storedFavorites: [Datum] = []
     var favPoki: [Datum] = []
     var urlToggle: Bool = false
+    var isFiltered: Bool = false
     
     static var pokiIDs = [String]()
     
@@ -49,7 +51,8 @@ class PokemonViewController: UIViewController {
             dictionary.keys.forEach { key in
                 defaults.removeObject(forKey: key)
             }
-            self.favPoki.removeAll(keepingCapacity: true)
+            self.storedFavorites.removeAll()
+            PokemonViewController.pokiIDs.removeAll()
             self.tableViewOutlet.reloadData()
         }
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -58,32 +61,31 @@ class PokemonViewController: UIViewController {
     }
     
     @IBAction func addFavTapped(_ sender: Any) {
-        PokemonViewController.pokiIDs.removeDuplicates()
         defaults.set(PokemonViewController.pokiIDs, forKey: "pokiIDs")
     }
     
     @IBAction func favTapped(_ sender: Any) {
-        urlToggle.toggle()
-        favPoki.removeAll(keepingCapacity: true)
-        baseURL = "https://api.pokemontcg.io/v2/cards?q=id:base1-2"
-        
-        if urlToggle {
-            if PokemonViewController.pokiIDs.count == 1 {
-                baseURL = "https://api.pokemontcg.io/v2/cards?q=id:\(PokemonViewController.pokiIDs[0])&orderBy=nationalPokedexNumbers"
-            } else {
-                let joint = "+OR+id:"
-                let joinedString = Array(PokemonViewController.pokiIDs.map(CollectionOfOne.init).joined(separator: CollectionOfOne(joint)))
-                baseURL += joinedString.joined()
-            }
+        isFiltered.toggle()
+        if isFiltered {
             favoriteOutlet.image = UIImage(systemName: "arrow.uturn.backward")
+            favPoki.removeAll()
+            storedFavorites.removeAll()
+            let uniqueIDs = Array(Set(PokemonViewController.pokiIDs))
+            for id in uniqueIDs {
+                for pokemon in poki {
+                    if pokemon.id.contains(id) {
+                        storedFavorites.append(pokemon)
+                    }
+                }
+            }
+            favPoki = storedFavorites
+            storedFavorites.removeAll()
         } else {
-            baseURL = "https://api.pokemontcg.io/v2/cards?q=nationalPokedexNumbers:[1+TO+151]+(set.id:base1+OR+set.id:base2+OR+set.id:base3+OR+set.id:basep)&orderBy=nationalPokedexNumbers"
+            favPoki = poki
             favoriteOutlet.image = UIImage(systemName: "star.fill")
         }
-        getPokemonData(apiURl: baseURL)
+//        getPokemonData(apiURl: baseURL)
         tableViewOutlet.reloadData()
-        
-        print("URL used was: " + baseURL)
     }
     
     @IBAction func soundTapped(_ sender: Any) {
@@ -122,6 +124,7 @@ class PokemonViewController: UIViewController {
             do {
                 let jsonData = try JSONDecoder().decode(Pokemon.self, from: data)
                 print("jsonData: ", jsonData)
+                self.poki = jsonData.data
                 self.favPoki = jsonData.data
                 DispatchQueue.main.async {
                     self.tableViewOutlet.reloadData()
@@ -142,10 +145,15 @@ extension PokemonViewController: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "pokemonCell", for: indexPath) as? PokiTableViewCell else {return UITableViewCell()}
         
         let poke = favPoki[indexPath.row]
+        
+        print("Total number of cells made:" + String(favPoki.count))
+        print(PokemonViewController.pokiIDs)
+    
         cell.setupUI(withDataFrom: poke)
         for (index, _) in favPoki.enumerated() {
             allIndexed.append(index)
         }
+        defaults.set(PokemonViewController.pokiIDs, forKey: "pokiIDs")
         return cell
         
     }
@@ -169,16 +177,3 @@ extension PokemonViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-extension Array where Element: Hashable {
-    func removingDuplicates() -> [Element] {
-        var addedDict = [Element: Bool]()
-
-        return filter {
-            addedDict.updateValue(true, forKey: $0) == nil
-        }
-    }
-
-    mutating func removeDuplicates() {
-        self = self.removingDuplicates()
-    }
-}
