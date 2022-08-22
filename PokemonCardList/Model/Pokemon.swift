@@ -34,8 +34,6 @@ struct Datum: Codable {
     let nationalPokedexNumbers: [Int]
     let legalities: DatumLegalities
     let images: DatumImages
-    let tcgplayer: Tcgplayer
-    let cardmarket: Cardmarket
     let evolvesFrom: String?
     let abilities: [Ability]?
     let resistances: [Resistance]?
@@ -43,7 +41,7 @@ struct Datum: Codable {
     enum CodingKeys: String, CodingKey {
         case id, name, supertype, subtypes, level, hp, types, evolvesTo, attacks, weaknesses, retreatCost, convertedRetreatCost
         case datumSet = "set"
-        case number, artist, rarity, flavorText, nationalPokedexNumbers, legalities, images, tcgplayer, cardmarket, evolvesFrom, abilities, resistances
+        case number, artist, rarity, flavorText, nationalPokedexNumbers, legalities, images, evolvesFrom, abilities, resistances
     }
 }
 
@@ -73,17 +71,6 @@ enum RetreatCost: String, Codable {
     case lightning = "Lightning"
     case psychic = "Psychic"
     case water = "Water"
-}
-
-// MARK: - Cardmarket
-struct Cardmarket: Codable {
-    let url: String
-    let updatedAt: CardmarketUpdatedAt
-    let prices: [String: Double]
-}
-
-enum CardmarketUpdatedAt: String, Codable {
-    case the20220819 = "2022/08/19"
 }
 
 // MARK: - Set
@@ -177,27 +164,6 @@ enum Subtype: String, Codable {
 
 enum Supertype: String, Codable {
     case pokémon = "Pokémon"
-}
-
-// MARK: - Tcgplayer
-struct Tcgplayer: Codable {
-    let url: String
-    let updatedAt: CardmarketUpdatedAt
-    let prices: Prices
-}
-
-// MARK: - Prices
-struct Prices: Codable {
-    let normal, holofoil, the1StEdition, unlimited: The1_StEdition?
-    let the1StEditionHolofoil, unlimitedHolofoil: The1_StEdition?
-
-    enum CodingKeys: String, CodingKey {
-        case normal, holofoil
-        case the1StEdition = "1stEdition"
-        case unlimited
-        case the1StEditionHolofoil = "1stEditionHolofoil"
-        case unlimitedHolofoil
-    }
 }
 
 // MARK: - The1_StEdition

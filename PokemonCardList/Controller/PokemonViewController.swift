@@ -42,11 +42,19 @@ class PokemonViewController: UIViewController {
     }
     
     @IBAction func clearDefaultsTapped(_ sender: Any) {
-        let defaults = UserDefaults.standard
-        let dictionary = defaults.dictionaryRepresentation()
-        dictionary.keys.forEach { key in
-            defaults.removeObject(forKey: key)
+        let ac = UIAlertController(title: "Delete Favorites", message: "Are you sure you want to delete favorites?", preferredStyle: .actionSheet)
+        let clear = UIAlertAction(title: "Remove", style: .destructive) { action in
+            let defaults = UserDefaults.standard
+            let dictionary = defaults.dictionaryRepresentation()
+            dictionary.keys.forEach { key in
+                defaults.removeObject(forKey: key)
+            }
+            self.favPoki.removeAll(keepingCapacity: true)
+            self.tableViewOutlet.reloadData()
         }
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        ac.addAction(clear)
+        present(ac, animated: true)
     }
     
     @IBAction func addFavTapped(_ sender: Any) {
@@ -63,11 +71,14 @@ class PokemonViewController: UIViewController {
             if PokemonViewController.pokiIDs.count == 1 {
                 baseURL = "https://api.pokemontcg.io/v2/cards?q=id:\(PokemonViewController.pokiIDs[0])&orderBy=nationalPokedexNumbers"
             } else {
-                let joinedString = PokemonViewController.pokiIDs.joined(separator: "+OR+id:")
-                baseURL += joinedString
+                let joint = "+OR+id:"
+                let joinedString = Array(PokemonViewController.pokiIDs.map(CollectionOfOne.init).joined(separator: CollectionOfOne(joint)))
+                baseURL += joinedString.joined()
             }
+            favoriteOutlet.image = UIImage(systemName: "arrow.uturn.backward")
         } else {
             baseURL = "https://api.pokemontcg.io/v2/cards?q=nationalPokedexNumbers:[1+TO+151]+(set.id:base1+OR+set.id:base2+OR+set.id:base3+OR+set.id:basep)&orderBy=nationalPokedexNumbers"
+            favoriteOutlet.image = UIImage(systemName: "star.fill")
         }
         getPokemonData(apiURl: baseURL)
         tableViewOutlet.reloadData()
